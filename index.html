@@ -2,64 +2,842 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Remotely Controlled Car</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remotely Controlled Car | Senior Design Project</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: #1a1a24;
+      --accent-primary: #6366f1;
+      --accent-secondary: #8b5cf6;
+      --accent-glow: rgba(99, 102, 241, 0.4);
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --success: #10b981;
+      --warning: #f59e0b;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Animated Background */
+    .bg-grid {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .floating-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.5;
+      pointer-events: none;
+      z-index: 0;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .orb-1 {
+      width: 400px;
+      height: 400px;
+      background: var(--accent-primary);
+      top: -100px;
+      right: -100px;
+      animation-delay: 0s;
+    }
+
+    .orb-2 {
+      width: 300px;
+      height: 300px;
+      background: var(--accent-secondary);
+      bottom: -50px;
+      left: -50px;
+      animation-delay: -10s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -30px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+    }
+
+    /* Container */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 60vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 80px 0;
+      position: relative;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 50px;
+      font-size: 0.875rem;
+      color: var(--accent-primary);
+      margin-bottom: 24px;
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    .badge::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 50%, var(--accent-secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: fadeInUp 0.6s ease-out 0.1s both;
+    }
+
+    .hero p {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Car Animation */
+    .car-visual {
+      margin-top: 48px;
+      position: relative;
+      animation: fadeInUp 0.6s ease-out 0.3s both;
+    }
+
+    .car-icon {
+      font-size: 4rem;
+      animation: drive 3s ease-in-out infinite;
+    }
+
+    .car-trail {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+      animation: trail 3s ease-in-out infinite;
+    }
+
+    @keyframes drive {
+      0%, 100% { transform: translateX(-20px); }
+      50% { transform: translateX(20px); }
+    }
+
+    @keyframes trail {
+      0%, 100% { opacity: 0.3; width: 150px; }
+      50% { opacity: 0.8; width: 250px; }
+    }
+
+    /* Team Section */
+    .section {
+      padding: 80px 0;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .section-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent-primary);
+      margin-bottom: 8px;
+    }
+
+    .section-heading {
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Info Cards */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+
+    .info-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .info-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .info-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(99, 102, 241, 0.3);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .info-card:hover::before {
+      opacity: 1;
+    }
+
+    .info-card-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .info-card-value {
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    /* Team Grid */
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .team-member {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .team-member:hover {
+      transform: translateY(-4px);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .team-avatar {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    .team-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .team-email {
+      font-size: 0.813rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Timeline Section */
+    .timeline-section {
+      padding: 80px 0;
+    }
+
+    .semester-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+
+    .semester-tab {
+      padding: 12px 32px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 50px;
+      font-size: 0.938rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .semester-tab:hover {
+      border-color: rgba(99, 102, 241, 0.3);
+      color: var(--text-primary);
+    }
+
+    .semester-tab.active {
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      border-color: transparent;
+      color: white;
+    }
+
+    .semester-content {
+      display: none;
+    }
+
+    .semester-content.active {
+      display: block;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, var(--accent-primary), var(--accent-secondary), var(--accent-primary));
+      border-radius: 2px;
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-bottom: 32px;
+      opacity: 0;
+      transform: translateX(-20px);
+      animation: slideIn 0.5s ease-out forwards;
+    }
+
+    .timeline-item:nth-child(1) { animation-delay: 0.1s; }
+    .timeline-item:nth-child(2) { animation-delay: 0.2s; }
+    .timeline-item:nth-child(3) { animation-delay: 0.3s; }
+    .timeline-item:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes slideIn {
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .timeline-marker {
+      position: absolute;
+      left: -32px;
+      top: 4px;
+      width: 16px;
+      height: 16px;
+      background: var(--bg-primary);
+      border: 3px solid var(--accent-primary);
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    .timeline-item:hover .timeline-marker {
+      background: var(--accent-primary);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .timeline-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      transition: all 0.3s ease;
+    }
+
+    .timeline-item:hover .timeline-card {
+      border-color: rgba(99, 102, 241, 0.3);
+      transform: translateX(8px);
+    }
+
+    .timeline-date {
+      font-size: 0.813rem;
+      font-weight: 600;
+      color: var(--accent-primary);
+      margin-bottom: 8px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .timeline-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+
+    .timeline-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .doc-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 8px;
+      font-size: 0.813rem;
+      font-weight: 500;
+      color: var(--accent-primary);
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .doc-link:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: var(--accent-primary);
+      transform: translateY(-2px);
+    }
+
+    .doc-link svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 48px 0;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    footer a {
+      color: var(--accent-primary);
+      text-decoration: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero {
+        min-height: auto;
+        padding: 60px 0;
+      }
+
+      .team-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .semester-tabs {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .timeline {
+        padding-left: 24px;
+      }
+
+      .timeline-marker {
+        left: -24px;
+        width: 12px;
+        height: 12px;
+      }
+    }
+  </style>
 </head>
 <body>
+  <!-- Animated Background -->
+  <div class="bg-grid"></div>
+  <div class="floating-orb orb-1"></div>
+  <div class="floating-orb orb-2"></div>
 
-  <!-- Project Info -->
-  <table border="1" align="center">
-    <tr>
-      <td>Project Name</td>
-      <td>Remotely Controlled Car</td>
-    </tr>
-    <tr>
-      <td>Team Members and Email Addresses</td>
-      <td>Christian Prieto (cprieto@fit.edu), Nicholas Shenk (nshenk2023@my.fit.edu), Joseph Digafe (jdigafe2023@my.fit.edu), Donoven Nicolas (dnicolas2021@my.fit.edu)   </td>
-    </tr>
-    <tr>
-      <td>Faculty Advisor</td>
-      <td>Marius Silaghi</td>
-    </tr>
-  </table>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <span class="badge">Senior Design Project 2024-2025</span>
+      <h1>Remotely Controlled Car</h1>
+      <p>An innovative IoT-enabled vehicle system featuring real-time remote control capabilities, built with cutting-edge embedded systems technology.</p>
+      <div class="car-visual">
+        <div class="car-icon">🏎️</div>
+        <div class="car-trail"></div>
+      </div>
+    </div>
+  </section>
 
-  <br>
+  <!-- Project Info Section -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-title">Project Details</p>
+        <h2 class="section-heading">Meet the Team</h2>
+      </div>
 
-  <!-- Semester Section -->
-  <h2 align="center">First Semester</h2>
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-card-label">Faculty Advisor</div>
+          <div class="info-card-value">Dr. Marius Silaghi</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-label">Institution</div>
+          <div class="info-card-value">Florida Institute of Technology</div>
+        </div>
+      </div>
 
-  <table border="1" align="center">
-    <tr>
-      <td>Plan (Sep 3)</td>
-      <td>
-        <a href="plan.pdf" target="_blank">Plan</a>,
-        <a href="presentation.pdf" target="_blank">Presentation</a>
-      </td>
-    </tr>
-    <tr>
-      <td>Milestone 1 (Sep 29)</td>
-      <td>
-        <a href="https://docs.google.com/document/d/1BhFzVWVmOZMfZXBazTDr-Z82DA2boCp9Q014ciMzR64/edit?usp=sharing">Requirement</a>, 
-        <a href="https://docs.google.com/document/d/1OPxBpLxLUwsQKyrJmv-ljqePQ42ndpqynzziYwLoyA8/edit?usp=sharing">Design</a>, 
-        <a href="https://docs.google.com/document/d/1UtGLha8VpvhqSD4RSm_5AqtrOKofEdTuJosnyfOnkiA/edit?usp=sharing">Test</a>, 
-        <a href="https://docs.google.com/presentation/d/1M26UVCqnfGd1NU59o3JGXV-BrRHPTwsbAzVhK4Wiu2w/edit?usp=sharing">Presentation</a>, 
-        <a href="ProgressEvaluation1.pdf">Progress Evaluation</a>
-      </td>
-    </tr>
-    <tr>
-      <td>Milestone 2 (Oct 27)</td>
-      <td>
-        <a href="https://docs.google.com/presentation/d/1CFk0p8dV-A82dsmMDeB8yM8RVvNHabw8ZaGw5Er60bw/edit?slide=id.p3#slide=id.p3">Presentation</a>, 
-        <a href="progeval2.pdf">Progress Evaluation</a>
-      </td>
-    </tr>
-    <tr>
-      <td>Milestone 3 (Nov 24)</td>
-      <td>
-        <a href="https://docs.google.com/presentation/d/1dF_Jr0qdJO5hXABv6KN-MlIJyYRUL1bSikzT5db64IY/edit?slide=id.p4#slide=id.p4">Presentation</a>, 
-        <a href="ProgressEvaluation33.pdf">Progress Evaluation</a>
-      </td>
-    </tr>
-  </table>
+      <div class="team-grid">
+        <div class="team-member">
+          <div class="team-avatar">CP</div>
+          <div class="team-name">Christian Prieto</div>
+          <div class="team-email">cprieto@fit.edu</div>
+        </div>
+        <div class="team-member">
+          <div class="team-avatar">NS</div>
+          <div class="team-name">Nicholas Shenk</div>
+          <div class="team-email">nshenk2023@my.fit.edu</div>
+        </div>
+        <div class="team-member">
+          <div class="team-avatar">JD</div>
+          <div class="team-name">Joseph Digafe</div>
+          <div class="team-email">jdigafe2023@my.fit.edu</div>
+        </div>
+        <div class="team-member">
+          <div class="team-avatar">DN</div>
+          <div class="team-name">Donoven Nicolas</div>
+          <div class="team-email">dnicolas2021@my.fit.edu</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
+  <!-- Timeline Section -->
+  <section class="timeline-section">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-title">Development Timeline</p>
+        <h2 class="section-heading">Project Milestones</h2>
+      </div>
+
+      <div class="semester-tabs">
+        <button class="semester-tab active" data-semester="1">Semester 1</button>
+        <button class="semester-tab" data-semester="2">Semester 2</button>
+      </div>
+
+      <!-- Semester 1 Content -->
+      <div class="semester-content active" id="semester-1">
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-card">
+              <div class="timeline-date">September 3, 2024</div>
+              <div class="timeline-title">Project Plan</div>
+              <div class="timeline-links">
+                <a href="plan.pdf" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  Plan
+                </a>
+                <a href="presentation.pdf" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  Presentation
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-card">
+              <div class="timeline-date">September 29, 2024</div>
+              <div class="timeline-title">Milestone 1 — Requirements & Initial Design</div>
+              <div class="timeline-links">
+                <a href="https://docs.google.com/document/d/1BhFzVWVmOZMfZXBazTDr-Z82DA2boCp9Q014ciMzR64/edit?usp=sharing" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  Requirement
+                </a>
+                <a href="https://docs.google.com/document/d/1OPxBpLxLUwsQKyrJmv-ljqePQ42ndpqynzziYwLoyA8/edit?usp=sharing" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  Design
+                </a>
+                <a href="https://docs.google.com/document/d/1UtGLha8VpvhqSD4RSm_5AqtrOKofEdTuJosnyfOnkiA/edit?usp=sharing" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                  Test
+                </a>
+                <a href="https://docs.google.com/presentation/d/1M26UVCqnfGd1NU59o3JGXV-BrRHPTwsbAzVhK4Wiu2w/edit?usp=sharing" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  Presentation
+                </a>
+                <a href="ProgressEvaluation1.pdf" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+                  Progress Eval
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-card">
+              <div class="timeline-date">October 27, 2024</div>
+              <div class="timeline-title">Milestone 2 — Development Progress</div>
+              <div class="timeline-links">
+                <a href="https://docs.google.com/presentation/d/1CFk0p8dV-A82dsmMDeB8yM8RVvNHabw8ZaGw5Er60bw/edit?slide=id.p3#slide=id.p3" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  Presentation
+                </a>
+                <a href="progeval2.pdf" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+                  Progress Eval
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-card">
+              <div class="timeline-date">November 24, 2024</div>
+              <div class="timeline-title">Milestone 3 — Integration & Testing</div>
+              <div class="timeline-links">
+                <a href="https://docs.google.com/presentation/d/1dF_Jr0qdJO5hXABv6KN-MlIJyYRUL1bSikzT5db64IY/edit?slide=id.p4#slide=id.p4" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  Presentation
+                </a>
+                <a href="ProgressEvaluation33.pdf" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+                  Progress Eval
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Semester 2 Content -->
+      <div class="semester-content" id="semester-2">
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-card">
+              <div class="timeline-date">January 2025</div>
+              <div class="timeline-title">Project Plan — Semester 2</div>
+              <div class="timeline-links">
+                <a href="plan_s2.pdf" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  Plan
+                </a>
+                <a href="presentation_s2.pdf" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  Presentation
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-card">
+              <div class="timeline-date">February 2025</div>
+              <div class="timeline-title">Milestone 4 — System Refinement</div>
+              <div class="timeline-links">
+                <a href="milestone4_presentation.pdf" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  Presentation
+                </a>
+                <a href="ProgressEvaluation4.pdf" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+                  Progress Eval
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-card">
+              <div class="timeline-date">March 2025</div>
+              <div class="timeline-title">Milestone 5 — Final Integration</div>
+              <div class="timeline-links">
+                <a href="milestone5_presentation.pdf" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  Presentation
+                </a>
+                <a href="ProgressEvaluation5.pdf" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+                  Progress Eval
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-card">
+              <div class="timeline-date">April 2025</div>
+              <div class="timeline-title">Milestone 6 — Final Demonstration</div>
+              <div class="timeline-links">
+                <a href="milestone6_presentation.pdf" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  Presentation
+                </a>
+                <a href="ProgressEvaluation6.pdf" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+                  Progress Eval
+                </a>
+                <a href="final_report.pdf" target="_blank" class="doc-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  Final Report
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>Florida Institute of Technology — Senior Design Project 2024-2025</p>
+      <p style="margin-top: 8px;">Advised by <a href="#">Dr. Marius Silaghi</a></p>
+    </div>
+  </footer>
+
+  <script>
+    // Semester Tab Switching
+    document.querySelectorAll('.semester-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        // Remove active from all tabs
+        document.querySelectorAll('.semester-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.semester-content').forEach(c => c.classList.remove('active'));
+        
+        // Add active to clicked tab
+        tab.classList.add('active');
+        const semester = tab.dataset.semester;
+        document.getElementById(`semester-${semester}`).classList.add('active');
+        
+        // Re-trigger animations
+        document.querySelectorAll(`#semester-${semester} .timeline-item`).forEach((item, i) => {
+          item.style.animation = 'none';
+          item.offsetHeight; // Trigger reflow
+          item.style.animation = `slideIn 0.5s ease-out ${i * 0.1}s forwards`;
+        });
+      });
+    });
+
+    // Scroll animations using Intersection Observer
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.info-card, .team-member').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = 'all 0.6s ease-out';
+      observer.observe(el);
+    });
+
+    // Parallax effect on orbs
+    document.addEventListener('mousemove', (e) => {
+      const x = e.clientX / window.innerWidth;
+      const y = e.clientY / window.innerHeight;
+      
+      document.querySelectorAll('.floating-orb').forEach((orb, i) => {
+        const speed = (i + 1) * 20;
+        orb.style.transform = `translate(${x * speed}px, ${y * speed}px)`;
+      });
+    });
+  </script>
 </body>
 </html>
